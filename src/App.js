@@ -9,8 +9,10 @@ function App() {
       <header className="App-header">
         <div className="header-image-container">
         <img src={logo} className="App-logo" alt="logo" />
-        <h1 className="header-text-1">Odds Analyser </h1>
-        <h1 className="header-text-2">ELO & Poisson Methods</h1>
+          <div className='header-text-container'>
+            <h1 className='header-text '>Odds Analyser </h1>
+            <h1 className='header-text'>ELO & Poisson Methods</h1>
+          </div>
         </div>
       </header>
       <main>
