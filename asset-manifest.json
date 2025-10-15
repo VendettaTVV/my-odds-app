@@ -1,0 +1,16 @@
+{
+  "files": {
+    "main.css": "/my-odds-app/static/css/main.9328eb3b.css",
+    "main.js": "/my-odds-app/static/js/main.c997e887.js",
+    "static/js/453.5ea56deb.chunk.js": "/my-odds-app/static/js/453.5ea56deb.chunk.js",
+    "static/media/wp8054782.jpg": "/my-odds-app/static/media/wp8054782.93c275c94bc224856b58.jpg",
+    "index.html": "/my-odds-app/index.html",
+    "main.9328eb3b.css.map": "/my-odds-app/static/css/main.9328eb3b.css.map",
+    "main.c997e887.js.map": "/my-odds-app/static/js/main.c997e887.js.map",
+    "453.5ea56deb.chunk.js.map": "/my-odds-app/static/js/453.5ea56deb.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.9328eb3b.css",
+    "static/js/main.c997e887.js"
+  ]
+}
