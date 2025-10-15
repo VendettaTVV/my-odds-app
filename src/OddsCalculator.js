@@ -236,7 +236,7 @@ const OddsCalculator = () => {
                     <label>Away Team ID:</label>
                     <input type="text" value={teamBId} onChange={e => setTeamBId(e.target.value)} />
                     <button onClick={fetchTeamData} disabled={loading} className="calculate-btn">
-                        {loading ? 'Loading...' : 'Fetch Data from API'}
+                        {loading ? 'Loading...' : 'Fetch Data from www.football-data.org'}
                     </button>
                 </div>
             )}
@@ -271,23 +271,23 @@ const OddsCalculator = () => {
                     </div>
                     <div className="input-group">
                         <h3>Home Team Stats</h3>
-                        <label>Avg Goals Scored at Home:</label>
+                        <label>Avg Goals Scored at Home by {teamAName}:</label>
                         <input type="number" step="0.01" value={goalsForHome} onChange={e => setGoalsForHome(e.target.value)} />
-                        <label>Avg Goals Conceded at Home:</label>
+                        <label>Avg Goals Conceded at Home by {teamAName}:</label>
                         <input type="number" step="0.01" value={goalsAgainstHome} onChange={e => setGoalsAgainstHome(e.target.value)} />
                     </div>
                     <div className="input-group">
                         <h3>Away Team Stats</h3>
-                        <label>Avg Goals Scored Away:</label>
+                        <label>Avg Goals Scored Away by {teamBName}:</label>
                         <input type="number" step="0.01" value={goalsForAway} onChange={e => setGoalsForAway(e.target.value)} />
-                        <label>Avg Goals Conceded Away:</label>
+                        <label>Avg Goals Conceded Away by {teamBName}:</label>
                         <input type="number" step="0.01" value={goalsAgainstAway} onChange={e => setGoalsAgainstAway(e.target.value)} />
                     </div>
                 </>
             )}
             
             <div className="input-group">
-                <h3>General Settings</h3>
+                <h3>Margin Settings</h3>
                 <label>Bookmaker Margin (%):</label>
                 <input type="number" value={margin} onChange={e => setMargin(e.target.value)} />
             </div>
@@ -296,7 +296,7 @@ const OddsCalculator = () => {
             {results && (
                 <div className="results-container">
                     <div className="result-card">
-                        <p>Team A Win:</p>
+                        <p>{teamAName} Win:</p>
                         <p>Probability: <strong>{results.probA}%</strong></p>
                         <p>Decimal Odds: <strong>{results.oddsA_dec}</strong></p>
                         <p>Fractional Odds: <strong>{results.oddsA_frac}</strong></p>
@@ -310,7 +310,7 @@ const OddsCalculator = () => {
                         <p>American Odds: <strong>{results.oddsDraw_us}</strong></p>
                     </div>
                     <div className="result-card">
-                        <p>Team B Win:</p>
+                        <p>{teamBName} Win:</p>
                         <p>Probability: <strong>{results.probB}%</strong></p>
                         <p>Decimal Odds: <strong>{results.oddsB_dec}</strong></p>
                         <p>Fractional Odds: <strong>{results.oddsB_frac}</strong></p>
