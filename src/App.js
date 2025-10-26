@@ -1,4 +1,3 @@
-import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import OddsCalculator from './OddsCalculator';
 import Formulas from './Formulas';
@@ -11,8 +10,8 @@ function App() {
       <div className="App">
         <header className="App-header">
           <nav className='main-nav'>
-            <Link to="/oddsCalculator" className='nav-link'>OddsCalculator</Link>
-            <Link to="/formulas" className='nav-link'>Analysis Formulas</Link>
+            <Link to="/" className='nav-link'>OddsCalculator</Link>
+            <Link to="/formula" className='nav-link'>Analysis Formulas</Link>
           </nav>
           <div className="header-image-container">
           <img src={logo} className="App-logo" alt="logo" />
@@ -24,8 +23,8 @@ function App() {
         </header>
         <main>
           <Routes>
-            <Route path="/oddsCalculator" element={<OddsCalculator />}/>
-            <Route path="/formulas" element={<Formulas />}/>
+            <Route path="/" element={<OddsCalculator />}/>
+            <Route path="/formula" element={<Formulas />}/>
           </Routes>
         </main>
       </div>

@@ -4,7 +4,7 @@ import './Formulas.css';
 const Formulas = () => {
     return (
         <div className="formulas-container">
-            <h2>Detailed Analysis Formulas</h2>
+            <h2>Analysis Formulas</h2>
             <p className="intro-text">
                 This section outlines the mathematical models used by professional traders to set fair odds, manage risk, and identify value betting opportunities.
             </p>
