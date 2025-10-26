@@ -1,10 +1,13 @@
 
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
 body {
   font-family: Arial, sans-serif;
   background-color: #f0f2f5;
   color: #333;
-  margin: 0;
-  padding: 0;
 }
 
 .App {
@@ -56,6 +59,26 @@ body {
   margin: 0;
   padding: 5px;
   line-height: 1.2;
+}
+.main-nav {
+    display: flex;
+    justify-content: center;
+    padding: 10px 0;
+    background-color: #505963;
+}
+
+.nav-link {
+    color: white;
+    text-decoration: none;
+    margin: 0 15px;
+    font-weight: bold;
+    padding: 5px 10px;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+}
+
+.nav-link:hover {
+    background-color: #003d7a;
 }
 
 
@@ -175,6 +198,11 @@ button.calculate-btn:hover {
   .header-text {
     font-size: 1.8em;
   }
+  .App
+  {
+  margin: auto;
+  border-radius: 0px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -182,3 +210,4 @@ button.calculate-btn:hover {
     font-size: 1.2em; 
   }
 }
+
