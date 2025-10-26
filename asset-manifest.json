@@ -1,16 +1,16 @@
 {
   "files": {
-    "main.css": "/my-odds-app/static/css/main.ddfe4fe1.css",
-    "main.js": "/my-odds-app/static/js/main.e38fde90.js",
+    "main.css": "/my-odds-app/static/css/main.4cbd24a7.css",
+    "main.js": "/my-odds-app/static/js/main.1372bded.js",
     "static/js/453.5ea56deb.chunk.js": "/my-odds-app/static/js/453.5ea56deb.chunk.js",
     "static/media/wp8054782.jpg": "/my-odds-app/static/media/wp8054782.93c275c94bc224856b58.jpg",
     "index.html": "/my-odds-app/index.html",
-    "main.ddfe4fe1.css.map": "/my-odds-app/static/css/main.ddfe4fe1.css.map",
-    "main.e38fde90.js.map": "/my-odds-app/static/js/main.e38fde90.js.map",
+    "main.4cbd24a7.css.map": "/my-odds-app/static/css/main.4cbd24a7.css.map",
+    "main.1372bded.js.map": "/my-odds-app/static/js/main.1372bded.js.map",
     "453.5ea56deb.chunk.js.map": "/my-odds-app/static/js/453.5ea56deb.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.ddfe4fe1.css",
-    "static/js/main.e38fde90.js"
+    "static/css/main.4cbd24a7.css",
+    "static/js/main.1372bded.js"
   ]
 }
