@@ -5,7 +5,7 @@ import MethodSelector from './MethoSelector';
 const OddsCalculator = () => {
     const [method, setMethod] = useState('poisson');
     const [results, setResults] = useState(null);
-    const [setError] = useState('');
+    const [error,setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [teamAName, setTeamAName] = useState('Team A');
     const [teamBName, setTeamBName] = useState('Team B');

@@ -83,7 +83,7 @@ const Formulas = () => {
                 <div className="math-box">
                     EV = (P<sub>your</sub> &times; K<sub>bookmaker</sub>) - 1
                     <p className="explanation">
-                        <strong>P<sub>your</sub></strong> is your estimated probability (from ELO/Poisson), and <strong>K<sub>bookmaker</sub></strong> is the odds offered. EV > 0 signifies a **Value Bet** (you have an edge).
+                        <strong>P<sub>your</sub></strong> is your estimated probability (from ELO/Poisson), and <strong>K<sub>bookmaker</sub></strong> is the odds offered. EV {'>'} 0 signifies a **Value Bet** (you have an edge).
                     </p>
                 </div>
 
