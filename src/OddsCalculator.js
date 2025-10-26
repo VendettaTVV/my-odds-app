@@ -25,7 +25,7 @@ const OddsCalculator = () => {
     const [goalsAgainstAway, setGoalsAgainstAway] = useState();
 
     // API Tokens and IDs
-    const [apiToken] = useState('ff2371e19c03494cbc445bb12d1ea0bf');
+    const [apiToken, setApiToken] = useState('ff2371e19c03494cbc445bb12d1ea0bf');
     const [teamAId, setTeamAId] = useState('');
     const [teamBId, setTeamBId] = useState('');
     const [leagueId, setLeagueId] = useState('PL'); // Premier League
@@ -86,7 +86,7 @@ const OddsCalculator = () => {
             );
             const teamAMatches = teamARes.data.matches.filter(match => match.competition.code === leagueId);
             const homeMatchesA = teamAMatches.filter(match => match.homeTeam.id === Number(teamAId));
-            
+            const awayMatchesA = teamAMatches.filter(match => match.awayTeam.id === Number(teamAId));
 
             const goalsForAHome = homeMatchesA.reduce((sum, match) => sum + (match.score.fullTime.home ?? 0), 0);
             const goalsAgainstAHome = homeMatchesA.reduce((sum, match) => sum + (match.score.fullTime.away ?? 0), 0);
@@ -102,6 +102,7 @@ const OddsCalculator = () => {
             );
             const teamBMatches = teamBRes.data.matches.filter(match => match.competition.code === leagueId);
             const awayMatchesB = teamBMatches.filter(match => match.awayTeam.id === Number(teamBId));
+            const homeMatchesB = teamBMatches.filter(match => match.homeTeam.id === Number(teamBId));
 
             const goalsForBAway = awayMatchesB.reduce((sum, match) => sum + (match.score.fullTime.away ?? 0), 0);
             const goalsAgainstBAway = awayMatchesB.reduce((sum, match) => sum + (match.score.fullTime.home ?? 0), 0);
