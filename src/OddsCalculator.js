@@ -229,11 +229,11 @@ const OddsCalculator = () => {
 
             {method === 'poisson' && (
                 <div className="input-group">
-                    <label>League Code:</label>
+                    <label>League Code:find on the website www.football-data.org</label>
                     <input type="text" value={leagueId} onChange={e => setLeagueId(e.target.value)} />
-                    <label>Home Team ID:</label>
+                    <label>Home Team ID: find on the website www.football-data.org</label>
                     <input type="text" value={teamAId} onChange={e => setTeamAId(e.target.value)} />
-                    <label>Away Team ID:</label>
+                    <label>Away Team ID: find on the website www.football-data.org</label>
                     <input type="text" value={teamBId} onChange={e => setTeamBId(e.target.value)} />
                     <button onClick={fetchTeamData} disabled={loading} className="calculate-btn">
                         {loading ? 'Loading...' : 'Fetch Data from www.football-data.org'}
