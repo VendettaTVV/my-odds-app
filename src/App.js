@@ -1,34 +1,30 @@
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import MethoSelector from './MethoSelector';
 import OddsCalculator from './OddsCalculator';
 import Formulas from './Formulas';
-import './styles.css';
-import logo from './wp8054782.jpg';
 
 function App() {
+  // Состояние для переключения вкладок: 'poisson', 'elo' или 'formulas'
+  const [activeTab, setActiveTab] = useState('poisson');
+
   return (
-    <Router>
-      <div className="App">
-        <header className="App-header">
-          <nav className='main-nav'>
-            <Link to="/" className='nav-link'>OddsCalculator</Link>
-            <Link to="/formula" className='nav-link'>Analysis Formulas</Link>
-          </nav>
-          <div className="header-image-container">
-          <img src={logo} className="App-logo" alt="logo" />
-            <div className='header-text-container'>
-              <h1 className='header-text '>Odds Analyser </h1>
-              <h1 className='header-text'>ELO & Poisson Methods</h1>
-            </div>
+    <div className="min-h-screen bg-gray-900 text-gray-100 font-sans">
+      <header className="bg-gray-800 border-b border-gray-700 p-4 shadow-md">
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold tracking-wider text-blue-400">ODDS ANALYSER</h1>
+            <p className="text-xs text-gray-400 uppercase tracking-widest mt-1">Quantitative Pricing Model</p>
           </div>
-        </header>
-        <main>
-          <Routes>
-            <Route path="/" element={<OddsCalculator />}/>
-            <Route path="/formula" element={<Formulas />}/>
-          </Routes>
-        </main>
-      </div>
-    </Router>
+          <MethoSelector activeTab={activeTab} setActiveTab={setActiveTab} />
+        </div>
+      </header>
+      
+      <main className="max-w-6xl mx-auto p-6 mt-4">
+        {activeTab === 'poisson' && <OddsCalculator method="poisson" />}
+        {activeTab === 'elo' && <OddsCalculator method="elo" />}
+        {activeTab === 'formulas' && <Formulas />}
+      </main>
+    </div>
   );
 }
 

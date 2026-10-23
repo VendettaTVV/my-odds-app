@@ -1,325 +1,219 @@
-import React, { useState } from 'react';
-import axios from 'axios';
-import MethodSelector from './MethoSelector';
+import React, { useState, useEffect } from 'react';
+import { Calculator, Percent, TrendingUp, Activity } from 'lucide-react';
 
-const OddsCalculator = () => {
-    const [method, setMethod] = useState('poisson');
-    const [results, setResults] = useState(null);
-    const [error,setError] = useState('');
-    const [loading, setLoading] = useState(false);
-    const [teamAName, setTeamAName] = useState('Team A');
-    const [teamBName, setTeamBName] = useState('Team B');
+function OddsCalculator({ method }) {
+  const [homeValue, setHomeValue] = useState(1.5);
+  const [awayValue, setAwayValue] = useState(1.1);
+  const [probs, setProbs] = useState({ home: 0, draw: 0, away: 0 });
+  const [heatmap, setHeatmap] = useState([]);
+  const [eloSensitivity, setEloSensitivity] = useState({ home: [], away: [] });
+  const [sensTarget, setSensTarget] = useState('home');
 
-    // ELO State
-    const [eloA, setEloA] = useState();
-    const [eloB, setEloB] = useState();
-    const [eloHomeAdvantage, setEloHomeAdvantage] = useState(30);
-    const [eloAdjustmentsA, setEloAdjustmentsA] = useState(0);
-    const [eloAdjustmentsB, setEloAdjustmentsB] = useState(-20);
+  useEffect(() => {
+    setHomeValue(method === 'poisson' ? 1.5 : 1500);
+    setAwayValue(method === 'poisson' ? 1.1 : 1450);
+  }, [method]);
 
-    // Poisson State
-    const [avgGoalsLeague, setAvgGoalsLeague] = useState();
-    const [goalsForHome, setGoalsForHome] = useState();
-    const [goalsAgainstHome, setGoalsAgainstHome] = useState();
-    const [goalsForAway, setGoalsForAway] = useState();
-    const [goalsAgainstAway, setGoalsAgainstAway] = useState();
+  useEffect(() => {
+    if (method === 'poisson') {
+      const factorial = (n) => (n === 0 || n === 1 ? 1 : n * factorial(n - 1));
+      const poissonProb = (k, lambda) => (Math.pow(lambda, k) * Math.exp(-lambda)) / factorial(k);
 
-    // API Tokens and IDs
-    const [apiToken, setApiToken] = useState('ff2371e19c03494cbc445bb12d1ea0bf');
-    const [teamAId, setTeamAId] = useState('');
-    const [teamBId, setTeamBId] = useState('');
-    const [leagueId, setLeagueId] = useState('PL'); // Premier League
-
-    // General State
-    const [margin, setMargin] = useState(5);
-
-    // --- Helper functions for odds conversion ---
-
-    const toFractional = (decimal) => {
-        if (decimal <= 1) return 'N/A';
-        const val = decimal - 1;
-        const tolerance = 0.01;
-        for (let d = 1; d <= 100; d++) {
-            const n = Math.round(val * d);
-            if (Math.abs(val - n / d) < tolerance) {
-                return `${n}/${d}`;
-            }
+      let hProb = 0, dProb = 0, aProb = 0;
+      const matrix = [];
+      
+      for (let i = 0; i <= 4; i++) {
+        const row = [];
+        for (let j = 0; j <= 4; j++) {
+          const prob = poissonProb(i, parseFloat(homeValue) || 0) * poissonProb(j, parseFloat(awayValue) || 0);
+          row.push(prob);
+          if (i > j) hProb += prob;
+          else if (i === j) dProb += prob;
+          else aProb += prob;
         }
-        return 'N/A';
-    };
+        matrix.push(row);
+      }
+      const total = hProb + dProb + aProb;
+      setProbs({ home: hProb / total, draw: dProb / total, away: aProb / total });
+      setHeatmap(matrix);
 
-    const toAmerican = (decimal) => {
-        if (decimal >= 2) {
-            return `+${Math.round((decimal - 1) * 100)}`;
-        } else {
-            return `-${Math.round(100 / (decimal - 1))}`;
-        }
-    };
-    
-    // --- API data fetching logic ---
+    } else {
+      const calcEloOdds = (h, a) => {
+        const eloDiff = (h + 100) - a; 
+        const pHome = 1 / (1 + Math.pow(10, -(eloDiff - 60) / 400)); 
+        const pAway = 1 / (1 + Math.pow(10, (eloDiff + 60) / 400));
+        const pDraw = 1 - pHome - pAway;
+        return { home: pHome, draw: pDraw > 0 ? pDraw : 0, away: pAway };
+      };
 
-    const fetchTeamData = async () => {
-        if (!teamAId || !teamBId) {
-            setError('Please enter both team IDs.');
-            return;
-        }
+      const baseHome = parseFloat(homeValue) || 1500;
+      const baseAway = parseFloat(awayValue) || 1500;
+      
+      setProbs(calcEloOdds(baseHome, baseAway));
 
-        setLoading(true);
-        setError('');
+      const shifts = [+30, +15, 0, -15, -30];
+      setEloSensitivity({
+        home: shifts.map(shift => ({
+          shift,
+          newElo: baseHome + shift,
+          odds: calcEloOdds(baseHome + shift, baseAway)
+        })),
+        away: shifts.map(shift => ({
+          shift,
+          newElo: baseAway + shift,
+          odds: calcEloOdds(baseHome, baseAway + shift)
+        }))
+      });
+    }
+  }, [method, homeValue, awayValue]);
 
-        const headers = { 'X-Auth-Token': apiToken };
+  const toOdds = (prob) => (prob > 0 ? (1 / prob).toFixed(2) : '0.00');
+  const toPercent = (prob) => (prob * 100).toFixed(1);
 
-        try {
-            // Fetch League Data
-            const leagueRes = await axios.get(
-              `https://corsproxy.io/?https://api.football-data.org/v4/competitions/${leagueId}/matches?status=FINISHED`,
-              { headers }
-            );
-            const allMatches = leagueRes.data.matches;
-            const leagueAvgGoals = allMatches.reduce((sum, match) => sum + (match.score.fullTime.home ?? 0) + (match.score.fullTime.away ?? 0), 0) / allMatches.length;
-            setAvgGoalsLeague(Number(leagueAvgGoals.toFixed(2)));
+  return (
+    <div className="bg-gray-800 p-6 rounded-lg border border-gray-700 shadow-xl">
+      <div className="flex items-center gap-2 mb-6">
+        <Calculator className="text-blue-400" size={24} />
+        <h2 className="text-xl font-bold text-white uppercase tracking-wide">
+          {method === 'poisson' ? 'Poisson Match Predictor' : 'ELO Market Pricing'}
+        </h2>
+      </div>
 
-            // Fetch Team A Data
-            const teamARes = await axios.get(
-              `https://corsproxy.io/?https://api.football-data.org/v4/teams/${teamAId}/matches?status=FINISHED`,
-              { headers }
-            );
-            const teamAMatches = teamARes.data.matches.filter(match => match.competition.code === leagueId);
-            const homeMatchesA = teamAMatches.filter(match => match.homeTeam.id === Number(teamAId));
-            const awayMatchesA = teamAMatches.filter(match => match.awayTeam.id === Number(teamAId));
-
-            const goalsForAHome = homeMatchesA.reduce((sum, match) => sum + (match.score.fullTime.home ?? 0), 0);
-            const goalsAgainstAHome = homeMatchesA.reduce((sum, match) => sum + (match.score.fullTime.away ?? 0), 0);
-            setGoalsForHome(Number((goalsForAHome / homeMatchesA.length).toFixed(2)) || 0);
-            setGoalsAgainstHome(Number((goalsAgainstAHome / homeMatchesA.length).toFixed(2)) || 0);
-
-            setTeamAName(homeMatchesA[0]?.homeTeam.name || 'Team A');
-
-            // Fetch Team B Data
-            const teamBRes = await axios.get(
-              `https://corsproxy.io/?https://api.football-data.org/v4/teams/${teamBId}/matches?status=FINISHED`,
-              { headers }
-            );
-            const teamBMatches = teamBRes.data.matches.filter(match => match.competition.code === leagueId);
-            const awayMatchesB = teamBMatches.filter(match => match.awayTeam.id === Number(teamBId));
-            const homeMatchesB = teamBMatches.filter(match => match.homeTeam.id === Number(teamBId));
-
-            const goalsForBAway = awayMatchesB.reduce((sum, match) => sum + (match.score.fullTime.away ?? 0), 0);
-            const goalsAgainstBAway = awayMatchesB.reduce((sum, match) => sum + (match.score.fullTime.home ?? 0), 0);
-            setGoalsForAway(Number((goalsForBAway / awayMatchesB.length).toFixed(2)) || 0);
-            setGoalsAgainstAway(Number((goalsAgainstBAway / awayMatchesB.length).toFixed(2)) || 0);
-
-            setTeamBName(awayMatchesB[0]?.awayTeam.name || 'Team B');
-
-            setLoading(false);
-            setError('');
-        } catch (err) {
-            setError('Failed to fetch data. Check your API token or team IDs.');
-            setLoading(false);
-        }
-    };
-
-    // --- ELO calculation logic ---
-
-    const calculateEloOdds = () => {
-        const finalEloA = Number(eloA) + Number(eloHomeAdvantage) + Number(eloAdjustmentsA);
-        const finalEloB = Number(eloB) + Number(eloAdjustmentsB);
-        const eloDifference = finalEloA - finalEloB;
-
-        const probA_raw = 1 / (1 + Math.pow(10, -eloDifference / 400));
-        const probB_raw = 1 - probA_raw;
-
-        const drawProbRaw = 0.25;
-        const totalRawProb = probA_raw + probB_raw + drawProbRaw;
-
-        const probA_norm = probA_raw / totalRawProb;
-        const probB_norm = probB_raw / totalRawProb;
-        const probDraw_norm = drawProbRaw / totalRawProb;
-
-        const marginFactor = 1 + Number(margin) / 100;
-        const oddsA_dec = 1 / (probA_norm * marginFactor);
-        const oddsB_dec = 1 / (probB_norm * marginFactor);
-        const oddsDraw_dec = 1 / (probDraw_norm * marginFactor);
-
-        setResults({
-            probA: (probA_norm * 100).toFixed(2),
-            oddsA_dec: oddsA_dec.toFixed(2),
-            oddsA_frac: toFractional(oddsA_dec),
-            oddsA_us: toAmerican(oddsA_dec),
-
-            probB: (probB_norm * 100).toFixed(2),
-            oddsB_dec: oddsB_dec.toFixed(2),
-            oddsB_frac: toFractional(oddsB_dec),
-            oddsB_us: toAmerican(oddsB_dec),
-
-            probDraw: (probDraw_norm * 100).toFixed(2),
-            oddsDraw_dec: oddsDraw_dec.toFixed(2),
-            oddsDraw_frac: toFractional(oddsDraw_dec),
-            oddsDraw_us: toAmerican(oddsDraw_dec),
-        });
-    };
-
-    // --- Poisson calculation logic ---
-
-    const calculatePoissonOdds = () => {
-        const attackStrengthA = goalsForHome / avgGoalsLeague;
-        const defenseStrengthA = goalsAgainstHome / avgGoalsLeague;
-        const attackStrengthB = goalsForAway / avgGoalsLeague;
-        const defenseStrengthB = goalsAgainstAway / avgGoalsLeague;
-
-        const lambdaA = attackStrengthA * defenseStrengthB * avgGoalsLeague;
-        const lambdaB = attackStrengthB * defenseStrengthA * avgGoalsLeague;
-
-        const poissonProb = (lambda, k) => (Math.pow(lambda, k) * Math.exp(-lambda)) / factorial(k);
-        const factorial = (n) => (n <= 1) ? 1 : n * factorial(n - 1);
-
-        let probA = 0, probB = 0, probDraw = 0;
-
-        for (let a = 0; a <= 5; a++) {
-            for (let b = 0; b <= 5; b++) {
-                const prob = poissonProb(lambdaA, a) * poissonProb(lambdaB, b);
-                if (a > b) probA += prob;
-                else if (b > a) probB += prob;
-                else probDraw += prob;
-            }
-        }
-
-        const totalProb = probA + probB + probDraw;
-        const probA_norm = probA / totalProb;
-        const probB_norm = probB / totalProb;
-        const probDraw_norm = probDraw / totalProb;
-
-        const marginFactor = 1 + Number(margin) / 100;
-        const oddsA_dec = 1 / (probA_norm * marginFactor);
-        const oddsB_dec = 1 / (probB_norm * marginFactor);
-        const oddsDraw_dec = 1 / (probDraw_norm * marginFactor);
-
-        setResults({
-            probA: (probA_norm * 100).toFixed(2),
-            oddsA_dec: oddsA_dec.toFixed(2),
-            oddsA_frac: toFractional(oddsA_dec),
-            oddsA_us: toAmerican(oddsA_dec),
-
-            probB: (probB_norm * 100).toFixed(2),
-            oddsB_dec: oddsB_dec.toFixed(2),
-            oddsB_frac: toFractional(oddsB_dec),
-            oddsB_us: toAmerican(oddsB_dec),
-
-            probDraw: (probDraw_norm * 100).toFixed(2),
-            oddsDraw_dec: oddsDraw_dec.toFixed(2),
-            oddsDraw_frac: toFractional(oddsDraw_dec),
-            oddsDraw_us: toAmerican(oddsDraw_dec),
-        });
-    };
-
-    // --- Main Calculation Handler ---
-
-    const handleCalculate = () => {
-        setError('');
-        if (method === 'elo') {
-            calculateEloOdds();
-        } else if (method === 'poisson') {
-            calculatePoissonOdds();
-        }
-    };
-
-    return (
-        <div className="calculator-container">
-            <MethodSelector method={method} setMethod={setMethod} />
-
-            {method === 'poisson' && (
-                <div className="input-group">
-                    <label>League Code:find on the website www.football-data.org</label>
-                    <input type="text" value={leagueId} onChange={e => setLeagueId(e.target.value)} />
-                    <label>Home Team ID: find on the website www.football-data.org</label>
-                    <input type="text" value={teamAId} onChange={e => setTeamAId(e.target.value)} />
-                    <label>Away Team ID: find on the website www.football-data.org</label>
-                    <input type="text" value={teamBId} onChange={e => setTeamBId(e.target.value)} />
-                    <button onClick={fetchTeamData} disabled={loading} className="calculate-btn">
-                        {loading ? 'Loading...' : 'Fetch Data from www.football-data.org'}
-                    </button>
-                </div>
-            )}
-            
-            {method === 'elo' && (
-                <>
-                    <div className="input-group">
-                        <h3>ELO Ratings ({teamAName} vs {teamBName})</h3>
-                        <label>Team A ELO ({teamAName}):</label>
-                        <input type="number" value={eloA} onChange={e => setEloA(e.target.value)} />
-                        <label>Team B ELO ({teamBName}):</label>
-                        <input type="number" value={eloB} onChange={e => setEloB(e.target.value)} />
-                    </div>
-                    <div className="input-group">
-                        <h3>Adjustments</h3>
-                        <label>Home Advantage (ELO):</label>
-                        <input type="number" value={eloHomeAdvantage} onChange={e => setEloHomeAdvantage(e.target.value)} />
-                        <label>Other Adjustments for ({teamAName})(Injuries, Form):</label>
-                        <input type="number" value={eloAdjustmentsA} onChange={e => setEloAdjustmentsA(e.target.value)} />
-                        <label>Other Adjustments for ({teamBName}) (Injuries, Form):</label>
-                        <input type="number" value={eloAdjustmentsB} onChange={e => setEloAdjustmentsB(e.target.value)} />
-                    </div>
-                </>
-            )}
-
-            {method === 'poisson' && (
-                <>
-                    <div className="input-group">
-                        <h3>Avg League Stats ({leagueId})</h3>
-                        <label>Avg Goals per League:</label>
-                        <input type="number" step="0.01" value={avgGoalsLeague} onChange={e => setAvgGoalsLeague(e.target.value)} />
-                    </div>
-                    <div className="input-group">
-                        <h3>Home Team Stats</h3>
-                        <label>Avg Goals Scored at Home by {teamAName}:</label>
-                        <input type="number" step="0.01" value={goalsForHome} onChange={e => setGoalsForHome(e.target.value)} />
-                        <label>Avg Goals Conceded at Home by {teamAName}:</label>
-                        <input type="number" step="0.01" value={goalsAgainstHome} onChange={e => setGoalsAgainstHome(e.target.value)} />
-                    </div>
-                    <div className="input-group">
-                        <h3>Away Team Stats</h3>
-                        <label>Avg Goals Scored Away by {teamBName}:</label>
-                        <input type="number" step="0.01" value={goalsForAway} onChange={e => setGoalsForAway(e.target.value)} />
-                        <label>Avg Goals Conceded Away by {teamBName}:</label>
-                        <input type="number" step="0.01" value={goalsAgainstAway} onChange={e => setGoalsAgainstAway(e.target.value)} />
-                    </div>
-                </>
-            )}
-            
-            <div className="input-group">
-                <h3>Margin Settings</h3>
-                <label>Bookmaker Margin (%):</label>
-                <input type="number" value={margin} onChange={e => setMargin(e.target.value)} />
-            </div>
-
-            <button className="calculate-btn" onClick={handleCalculate} disabled={loading}>Calculate Odds</button>
-            {results && (
-                <div className="results-container">
-                    <div className="result-card">
-                        <p>{teamAName} Win:</p>
-                        <p>Probability: <strong>{results.probA}%</strong></p>
-                        <p>Decimal Odds: <strong>{results.oddsA_dec}</strong></p>
-                        <p>Fractional Odds: <strong>{results.oddsA_frac}</strong></p>
-                        <p>American Odds: <strong>{results.oddsA_us}</strong></p>
-                    </div>
-                    <div className="result-card">
-                        <p>Draw:</p>
-                        <p>Probability: <strong>{results.probDraw}%</strong></p>
-                        <p>Decimal Odds: <strong>{results.oddsDraw_dec}</strong></p>
-                        <p>Fractional Odds: <strong>{results.oddsDraw_frac}</strong></p>
-                        <p>American Odds: <strong>{results.oddsDraw_us}</strong></p>
-                    </div>
-                    <div className="result-card">
-                        <p>{teamBName} Win:</p>
-                        <p>Probability: <strong>{results.probB}%</strong></p>
-                        <p>Decimal Odds: <strong>{results.oddsB_dec}</strong></p>
-                        <p>Fractional Odds: <strong>{results.oddsB_frac}</strong></p>
-                        <p>American Odds: <strong>{results.oddsB_us}</strong></p>
-                    </div>
-                </div>
-            )}
+      <div className="grid grid-cols-2 gap-6 mb-8 bg-gray-900 p-4 rounded-md border border-gray-700">
+        <div>
+          <label className="block text-sm text-gray-400 mb-2">
+            Home Team {method === 'poisson' ? 'xG (Expected Goals)' : 'ELO Rating'}
+          </label>
+          <input
+            type="number"
+            step={method === 'poisson' ? "0.1" : "1"}
+            value={homeValue}
+            onChange={(e) => setHomeValue(e.target.value)}
+            className="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-blue-500"
+          />
         </div>
-    );
-};
+        <div>
+          <label className="block text-sm text-gray-400 mb-2">
+            Away Team {method === 'poisson' ? 'xG (Expected Goals)' : 'ELO Rating'}
+          </label>
+          <input
+            type="number"
+            step={method === 'poisson' ? "0.1" : "1"}
+            value={awayValue}
+            onChange={(e) => setAwayValue(e.target.value)}
+            className="w-full bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-blue-500"
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-3 gap-4 mb-8">
+        {[
+          { label: 'HOME (1)', prob: probs.home, color: 'text-green-400' },
+          { label: 'DRAW (X)', prob: probs.draw, color: 'text-yellow-400' },
+          { label: 'AWAY (2)', prob: probs.away, color: 'text-red-400' }
+        ].map((outcome, idx) => (
+          <div key={idx} className="bg-gray-900 border border-gray-700 p-4 rounded-md text-center flex flex-col items-center justify-center">
+            <span className="text-gray-400 text-xs tracking-widest mb-1">{outcome.label}</span>
+            <span className={`text-3xl font-bold ${outcome.color} mb-1`}>{toOdds(outcome.prob)}</span>
+            <div className="flex items-center gap-1 text-gray-500 text-sm">
+              <Percent size={12} /> {toPercent(outcome.prob)}%
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {method === 'poisson' && (
+        <div className="mt-6 border-t border-gray-700 pt-6">
+          <div className="flex items-center gap-2 mb-4">
+            <TrendingUp className="text-blue-400" size={18} />
+            <h3 className="text-md font-semibold text-gray-200">Correct Score Matrix (0-4)</h3>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm text-center border-collapse">
+              <thead>
+                <tr>
+                  <th className="p-2 border border-gray-700 bg-gray-900 text-gray-400">Home \ Away</th>
+                  {[0, 1, 2, 3, 4].map(goals => (
+                    <th key={goals} className="p-2 border border-gray-700 bg-gray-900 text-gray-400">{goals}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {heatmap.map((row, i) => (
+                  <tr key={i}>
+                    <th className="p-2 border border-gray-700 bg-gray-900 text-gray-400">{i}</th>
+                    {row.map((prob, j) => {
+                      const alpha = Math.min(prob * 5, 1);
+                      return (
+                        <td 
+                          key={j} 
+                          className="p-2 border border-gray-700 font-mono text-gray-200"
+                          style={{ backgroundColor: `rgba(59, 130, 246, ${alpha})` }}
+                        >
+                          {toPercent(prob)}%
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {method === 'elo' && (
+        <div className="mt-6 border-t border-gray-700 pt-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Activity className="text-blue-400" size={18} />
+              <h3 className="text-md font-semibold text-gray-200">Odds Sensitivity Matrix</h3>
+            </div>
+            <div className="flex space-x-2 bg-gray-900 p-1 rounded border border-gray-700">
+              <button 
+                onClick={() => setSensTarget('home')}
+                className={`px-3 py-1 text-xs font-medium rounded ${sensTarget === 'home' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-gray-200'}`}
+              >
+                Home ELO
+              </button>
+              <button 
+                onClick={() => setSensTarget('away')}
+                className={`px-3 py-1 text-xs font-medium rounded ${sensTarget === 'away' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-gray-200'}`}
+              >
+                Away ELO
+              </button>
+            </div>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm text-center border-collapse">
+              <thead>
+                <tr>
+                  <th className="p-2 border border-gray-700 bg-gray-900 text-gray-400">ELO Shift</th>
+                  <th className="p-2 border border-gray-700 bg-gray-900 text-gray-400">New Rating</th>
+                  <th className="p-2 border border-gray-700 bg-gray-900 text-green-400">Home (1)</th>
+                  <th className="p-2 border border-gray-700 bg-gray-900 text-yellow-400">Draw (X)</th>
+                  <th className="p-2 border border-gray-700 bg-gray-900 text-red-400">Away (2)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {eloSensitivity[sensTarget].map((row, i) => (
+                  <tr key={i} className={row.shift === 0 ? 'bg-gray-700' : 'bg-gray-800'}>
+                    <td className="p-2 border border-gray-700 font-mono font-bold text-gray-200">
+                      {row.shift > 0 ? `+${row.shift}` : row.shift}
+                    </td>
+                    <td className="p-2 border border-gray-700 font-mono text-gray-300">{row.newElo}</td>
+                    <td className="p-2 border border-gray-700 font-mono text-gray-300">{toOdds(row.odds.home)}</td>
+                    <td className="p-2 border border-gray-700 font-mono text-gray-300">{toOdds(row.odds.draw)}</td>
+                    <td className="p-2 border border-gray-700 font-mono text-gray-300">{toOdds(row.odds.away)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default OddsCalculator;

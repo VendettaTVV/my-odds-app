@@ -1,70 +1,54 @@
-# Getting Started with Create React App
+# Odds Analyser: Quantitative Pricing Model
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+**Live Demo:** [https://vendettatvv.github.io/my-odds-app/](https://vendettatvv.github.io/my-odds-app/)
 
-## Available Scripts
+A professional-grade React dashboard designed to calculate True Odds and probabilistic matrices for sports betting markets. This project demonstrates the practical application of mathematical models (Poisson Distribution and ELO Rating System) to generate accurate 1X2 market pricing.
 
-In the project directory, you can run:
+## 🎯 Core Features & Mathematical Engines
 
-### `npm start`
+The application utilizes two distinct models to evaluate match probabilities, mirroring the workflows used by quantitative analysts and trading departments.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### 1. Poisson Distribution Model (xG Based)
+Calculates the probability of exact scorelines based on Expected Goals (xG) or historical scoring averages.
+*   **Correct Score Heatmap:** Dynamically generates a 5x5 matrix (from 0:0 to 4:4) visualising the highest probability scorelines.
+*   **True Odds Calculation:** Aggregates the probabilities from the matrix to determine the fair baseline odds for Home Win, Draw, and Away Win.
+*   **Use Case:** Ideal for pre-match pricing based on advanced xG metrics and underlying team performance data.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### 2. ELO Rating System
+Evaluates relative team strength dynamically.
+*   **Rating Conversion:** Translates the ELO difference between two teams into an expected win probability.
+*   **Market Adjustments:** Automatically factors in standard market parameters, including Home Advantage (+100 ELO points) and Draw Margin adjustments (-60/+60 bounds).
+*   **Odds Sensitivity Matrix:** A critical risk-management tool. It simulates how the 1X2 odds line shifts if a team's ELO rating suddenly changes by ±15 or ±30 points (e.g., due to late injury news or weather changes), allowing traders to anticipate market movements.
 
-### `npm test`
+## 🛠 Technical Stack
+*   **Frontend Framework:** React.js (Hooks, Functional Components)
+*   **Styling:** Tailwind CSS (Dark-mode, trading terminal aesthetic)
+*   **Icons:** Lucide React
+*   **Deployment:** GitHub Pages
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## 🚀 Local Development
 
-### `npm run build`
+To run this application locally for further modification or testing:
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+1.  Clone the repository:
+    ```bash
+    git clone [https://github.com/VendettaTVV/my-odds-app.git](https://github.com/VendettaTVV/my-odds-app.git)
+    ```
+2.  Navigate to the project directory:
+    ```bash
+    cd my-odds-app
+    ```
+3.  Install dependencies:
+    ```bash
+    npm install
+    ```
+4.  Start the development server:
+    ```bash
+    npm start
+    ```
+    The app will automatically open in your default browser at `http://localhost:3000`.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+## 📈 Future Roadmap
+*   **Implied Probability Converter:** Add a feature to input bookmaker odds and extract the implied probability and overround (margin).
+*   **Kelly Criterion Calculator:** Implement stake sizing recommendations based on calculated True Odds vs. Market Odds.
+*   **Live Data Integration:** Connect to external sports APIs to fetch real-time xG and ELO data dynamically.
