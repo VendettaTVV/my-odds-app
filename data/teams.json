@@ -1,0 +1,102 @@
+{
+    "West Ham": {
+        "attack_xg": 1.21,
+        "defense_xg": 1.71
+    },
+    "Liverpool": {
+        "attack_xg": 1.66,
+        "defense_xg": 1.39
+    },
+    "Burnley": {
+        "attack_xg": 1.0,
+        "defense_xg": 1.97
+    },
+    "Crystal Palace": {
+        "attack_xg": 1.08,
+        "defense_xg": 1.34
+    },
+    "Fulham": {
+        "attack_xg": 1.24,
+        "defense_xg": 1.34
+    },
+    "Brighton": {
+        "attack_xg": 1.37,
+        "defense_xg": 1.21
+    },
+    "Man City": {
+        "attack_xg": 2.03,
+        "defense_xg": 0.92
+    },
+    "Nott'm Forest": {
+        "attack_xg": 1.26,
+        "defense_xg": 1.34
+    },
+    "Sunderland": {
+        "attack_xg": 1.11,
+        "defense_xg": 1.26
+    },
+    "Tottenham": {
+        "attack_xg": 1.26,
+        "defense_xg": 1.5
+    },
+    "Chelsea": {
+        "attack_xg": 1.53,
+        "defense_xg": 1.37
+    },
+    "Bournemouth": {
+        "attack_xg": 1.53,
+        "defense_xg": 1.42
+    },
+    "Arsenal": {
+        "attack_xg": 1.87,
+        "defense_xg": 0.71
+    },
+    "Newcastle": {
+        "attack_xg": 1.39,
+        "defense_xg": 1.45
+    },
+    "Wolves": {
+        "attack_xg": 0.71,
+        "defense_xg": 1.79
+    },
+    "Leeds": {
+        "attack_xg": 1.29,
+        "defense_xg": 1.47
+    },
+    "Everton": {
+        "attack_xg": 1.24,
+        "defense_xg": 1.32
+    },
+    "Brentford": {
+        "attack_xg": 1.45,
+        "defense_xg": 1.37
+    },
+    "Man United": {
+        "attack_xg": 1.82,
+        "defense_xg": 1.32
+    },
+    "Aston Villa": {
+        "attack_xg": 1.47,
+        "defense_xg": 1.29
+    },
+    "Southampton": {
+        "attack_xg": 0.68,
+        "defense_xg": 2.26
+    },
+    "Ipswich": {
+        "attack_xg": 0.95,
+        "defense_xg": 2.16
+    },
+    "Leicester": {
+        "attack_xg": 0.87,
+        "defense_xg": 2.11
+    },
+    "Sheffield United": {
+        "attack_xg": 0.92,
+        "defense_xg": 2.74
+    },
+    "Luton": {
+        "attack_xg": 1.37,
+        "defense_xg": 2.24
+    }
+}
