@@ -1,54 +1,42 @@
-# Odds Analyser: Quantitative Pricing Model
+# Quantitative Sports Pricing Dashboard (1X2 Markets)
 
 **Live Demo:** [https://vendettatvv.github.io/my-odds-app/](https://vendettatvv.github.io/my-odds-app/)
 
-A professional-grade React dashboard designed to calculate True Odds and probabilistic matrices for sports betting markets. This project demonstrates the practical application of mathematical models (Poisson Distribution and ELO Rating System) to generate accurate 1X2 market pricing.
+A professional-grade pricing dashboard and data pipeline designed to simulate the toolset of quantitative analysts and sports traders. The project calculates "True Odds" for football (soccer) matches using historical data, applies custom bookmaker margins (overround), and provides correct score probability matrices.
 
-## 🎯 Core Features & Mathematical Engines
+## 🏗 Architecture
 
-The application utilizes two distinct models to evaluate match probabilities, mirroring the workflows used by quantitative analysts and trading departments.
+To maintain a fast, serverless frontend hosted on GitHub Pages, the architecture is split into an offline Data Engineering pipeline and a dynamic React frontend.
 
-### 1. Poisson Distribution Model (xG Based)
-Calculates the probability of exact scorelines based on Expected Goals (xG) or historical scoring averages.
-*   **Correct Score Heatmap:** Dynamically generates a 5x5 matrix (from 0:0 to 4:4) visualising the highest probability scorelines.
-*   **True Odds Calculation:** Aggregates the probabilities from the matrix to determine the fair baseline odds for Home Win, Draw, and Away Win.
-*   **Use Case:** Ideal for pre-match pricing based on advanced xG metrics and underlying team performance data.
+1. **Data Pipeline (Python & SQLite):** Parses historical CSV match data, processes it through quantitative models, and exports static JSON files.
+2. **Frontend (React):** Consumes the generated JSON data to calculate real-time probabilities, odds, and sensitivity matrices without requiring a live backend.
 
-### 2. ELO Rating System
-Evaluates relative team strength dynamically.
-*   **Rating Conversion:** Translates the ELO difference between two teams into an expected win probability.
-*   **Market Adjustments:** Automatically factors in standard market parameters, including Home Advantage (+100 ELO points) and Draw Margin adjustments (-60/+60 bounds).
-*   **Odds Sensitivity Matrix:** A critical risk-management tool. It simulates how the 1X2 odds line shifts if a team's ELO rating suddenly changes by ±15 or ±30 points (e.g., due to late injury news or weather changes), allowing traders to anticipate market movements.
+## 🧮 Mathematical Models
 
-## 🛠 Technical Stack
-*   **Frontend Framework:** React.js (Hooks, Functional Components)
-*   **Styling:** Tailwind CSS (Dark-mode, trading terminal aesthetic)
-*   **Icons:** Lucide React
-*   **Deployment:** GitHub Pages
+### 1. ELO Rating System (Dynamic Form)
+- Ratings are recalculated match-by-match based on expected vs. actual outcomes.
+- **Model Calibration:** The parameters were backtested and optimized against 4 seasons of Premier League data (minimizing prediction error/Brier Score), resulting in a calibrated **K-factor of 28** and a **Home Advantage of 40 ELO points**.
 
-## 🚀 Local Development
+### 2. Poisson Distribution (Expected Goals)
+- Forecasts the exact scoreline probabilities (0-0, 2-1, etc.).
+- **Rolling Window:** Instead of relying on static historical averages, the Python pipeline uses `pandas` to calculate attack and defense strengths based strictly on a **38-game rolling window**, ensuring the model reacts to current team form.
 
-To run this application locally for further modification or testing:
+### 3. Risk & Margin Management
+- Features a dynamic Margin (%) input to simulate how bookmakers compress true odds to guarantee an overround.
+- Includes an ELO Sensitivity Matrix to visualize how odds shift when a team's rating changes (e.g., due to a red card or key injury in-play).
 
-1.  Clone the repository:
-    ```bash
-    git clone [https://github.com/VendettaTVV/my-odds-app.git](https://github.com/VendettaTVV/my-odds-app.git)
-    ```
-2.  Navigate to the project directory:
-    ```bash
-    cd my-odds-app
-    ```
-3.  Install dependencies:
-    ```bash
-    npm install
-    ```
-4.  Start the development server:
-    ```bash
-    npm start
-    ```
-    The app will automatically open in your default browser at `http://localhost:3000`.
+## 🛠 Tech Stack
+- **Frontend:** React 19, Tailwind CSS, Lucide Icons.
+- **Data Engineering:** Python 3, Pandas, SQLite3.
+- **Deployment:** GitHub Pages (CI/CD via gh-pages).
 
-## 📈 Future Roadmap
-*   **Implied Probability Converter:** Add a feature to input bookmaker odds and extract the implied probability and overround (margin).
-*   **Kelly Criterion Calculator:** Implement stake sizing recommendations based on calculated True Odds vs. Market Odds.
-*   **Live Data Integration:** Connect to external sports APIs to fetch real-time xG and ELO data dynamically.
+## 🚀 How to Run Locally
+
+### 1. Update the Data (Python Pipeline)
+Navigate to the `python` directory and run the scripts to fetch the latest EPL data, calculate ratings, and generate the JSON feeds:
+```bash
+cd python
+pip install pandas
+python load_data.py    # Fetches 4 seasons of data into SQLite
+python elo.py          # Calibrates and exports elo.json
+python export.py       # Calculates rolling xG and exports teams.json
