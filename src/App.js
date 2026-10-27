@@ -4,7 +4,6 @@ import OddsCalculator from './OddsCalculator';
 import Formulas from './Formulas';
 
 function App() {
-  // Состояние для переключения вкладок: 'poisson', 'elo' или 'formulas'
   const [activeTab, setActiveTab] = useState('poisson');
 
   return (

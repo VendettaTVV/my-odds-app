@@ -1,102 +1,102 @@
 {
     "West Ham": {
-        "attack_xg": 1.21,
-        "defense_xg": 1.71
+        "attack_xg": 1.24,
+        "defense_xg": 1.59
     },
     "Liverpool": {
         "attack_xg": 1.66,
-        "defense_xg": 1.39
+        "defense_xg": 1.41
     },
     "Burnley": {
-        "attack_xg": 1.0,
+        "attack_xg": 0.96,
         "defense_xg": 1.97
     },
     "Crystal Palace": {
-        "attack_xg": 1.08,
-        "defense_xg": 1.34
+        "attack_xg": 1.05,
+        "defense_xg": 1.48
     },
     "Fulham": {
-        "attack_xg": 1.24,
-        "defense_xg": 1.34
+        "attack_xg": 1.19,
+        "defense_xg": 1.29
     },
     "Brighton": {
-        "attack_xg": 1.37,
-        "defense_xg": 1.21
+        "attack_xg": 1.34,
+        "defense_xg": 1.17
     },
     "Man City": {
-        "attack_xg": 2.03,
+        "attack_xg": 1.99,
         "defense_xg": 0.92
     },
     "Nott'm Forest": {
-        "attack_xg": 1.26,
-        "defense_xg": 1.34
+        "attack_xg": 1.4,
+        "defense_xg": 1.25
     },
     "Sunderland": {
-        "attack_xg": 1.11,
-        "defense_xg": 1.26
+        "attack_xg": 1.12,
+        "defense_xg": 1.35
     },
     "Tottenham": {
-        "attack_xg": 1.26,
-        "defense_xg": 1.5
+        "attack_xg": 1.17,
+        "defense_xg": 1.57
     },
     "Chelsea": {
-        "attack_xg": 1.53,
-        "defense_xg": 1.37
+        "attack_xg": 1.42,
+        "defense_xg": 1.49
     },
     "Bournemouth": {
-        "attack_xg": 1.53,
-        "defense_xg": 1.42
+        "attack_xg": 1.51,
+        "defense_xg": 1.3
     },
     "Arsenal": {
-        "attack_xg": 1.87,
-        "defense_xg": 0.71
+        "attack_xg": 1.84,
+        "defense_xg": 0.74
     },
     "Newcastle": {
-        "attack_xg": 1.39,
-        "defense_xg": 1.45
+        "attack_xg": 1.42,
+        "defense_xg": 1.51
     },
     "Wolves": {
-        "attack_xg": 0.71,
-        "defense_xg": 1.79
+        "attack_xg": 0.74,
+        "defense_xg": 1.71
     },
     "Leeds": {
-        "attack_xg": 1.29,
-        "defense_xg": 1.47
+        "attack_xg": 1.31,
+        "defense_xg": 1.38
     },
     "Everton": {
-        "attack_xg": 1.24,
-        "defense_xg": 1.32
+        "attack_xg": 1.29,
+        "defense_xg": 1.4
     },
     "Brentford": {
-        "attack_xg": 1.45,
-        "defense_xg": 1.37
+        "attack_xg": 1.42,
+        "defense_xg": 1.34
     },
     "Man United": {
-        "attack_xg": 1.82,
-        "defense_xg": 1.32
+        "attack_xg": 1.86,
+        "defense_xg": 1.24
     },
     "Aston Villa": {
-        "attack_xg": 1.47,
-        "defense_xg": 1.29
+        "attack_xg": 1.54,
+        "defense_xg": 1.38
     },
     "Southampton": {
         "attack_xg": 0.68,
-        "defense_xg": 2.26
+        "defense_xg": 2.27
     },
     "Ipswich": {
-        "attack_xg": 0.95,
-        "defense_xg": 2.16
+        "attack_xg": 0.94,
+        "defense_xg": 2.24
     },
     "Leicester": {
-        "attack_xg": 0.87,
-        "defense_xg": 2.11
+        "attack_xg": 0.78,
+        "defense_xg": 2.08
     },
     "Sheffield United": {
-        "attack_xg": 0.92,
-        "defense_xg": 2.74
+        "attack_xg": 0.95,
+        "defense_xg": 2.81
     },
     "Luton": {
-        "attack_xg": 1.37,
-        "defense_xg": 2.24
+        "attack_xg": 1.42,
+        "defense_xg": 2.35
     }
 }

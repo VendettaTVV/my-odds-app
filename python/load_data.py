@@ -14,4 +14,4 @@ cols = ["Date", "HomeTeam", "AwayTeam", "FTHG", "FTAG"]
 con = sqlite3.connect("football.db")
 df[cols].to_sql("matches", con, if_exists="replace", index=False)
 
-print(f"Загружено матчей: {len(df)}")
+print(f"Loaded matches: {len(df)}")

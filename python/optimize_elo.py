@@ -1,8 +1,12 @@
-import pandas as pd
 import sqlite3
+import pandas as pd
 
+# 1. Connect to the database and load match history
 con = sqlite3.connect("football.db")
 df = pd.read_sql("SELECT Date, HomeTeam, AwayTeam, FTHG, FTAG FROM matches", con)
+con.close()
+
+# 2. Parse dates and sort chronologically for backtesting
 df["Date"] = pd.to_datetime(df["Date"], format='mixed', dayfirst=True)
 df = df.sort_values("Date")
 
@@ -10,11 +14,11 @@ best_k = 20
 best_home = 100
 lowest_error = float('inf')
 
-print("Запуск перебора параметров (это займет пару секунд)...")
+print("Running parameter grid search (this will take a few seconds)...")
 
-# Перебираем K от 10 до 50
+# 3. Grid Search: Iterate K-factor from 10 to 50
 for K in range(10, 52, 2):
-    # Перебираем Домашнее преимущество от 20 до 120
+    # Iterate Home Field Advantage from 20 to 120
     for HOME in range(20, 130, 10):
         ratings = {}
         error = 0
@@ -24,32 +28,32 @@ for K in range(10, 52, 2):
             rh = ratings.get(m.HomeTeam, 1500)
             ra = ratings.get(m.AwayTeam, 1500)
 
-            # Вычисляем ожидаемую вероятность победы хозяев
+            # Calculate expected win probability for the home team
             expected_home = 1 / (1 + 10 ** ((ra - (rh + HOME)) / 400))
             
-            # Фактический результат (1 - победа, 0.5 - ничья, 0 - поражение)
+            # Actual match outcome (1 for home win, 0.5 for draw, 0 for away win)
             if m.FTHG > m.FTAG: actual_home = 1
             elif m.FTHG == m.FTAG: actual_home = 0.5
             else: actual_home = 0
 
-            # Считаем ошибку предсказания (Brier Score)
-            # Пропускаем первый сезон (380 матчей), чтобы дать рейтингам "разогреться"
+            # Calculate prediction error (Brier Score)
+            # Skip the first season (380 matches) to let team ratings "warm up"
             if matches_counted > 380:
                 error += (expected_home - actual_home) ** 2
 
-            # Обновляем рейтинги
+            # Update ELO ratings based on prediction error
             change = K * (actual_home - expected_home)
             ratings[m.HomeTeam] = rh + change
             ratings[m.AwayTeam] = ra - change
             
             matches_counted += 1
 
-        # Если ошибка меньше предыдущей, запоминаем эти параметры
+        # Keep track of parameters that yield the lowest cumulative error
         if error < lowest_error:
             lowest_error = error
             best_k = K
             best_home = HOME
 
-print(f"Оптимизация завершена!")
-print(f"Идеальный K-фактор для АПЛ: {best_k}")
-print(f"Идеальное домашнее преимущество: {best_home}")
+print("Optimization completed!")
+print(f"Optimal K-factor for the league: {best_k}")
+print(f"Optimal Home Field Advantage (HFA): {best_home}")

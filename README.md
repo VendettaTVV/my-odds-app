@@ -1,42 +1,43 @@
-# Quantitative Sports Pricing Dashboard (1X2 Markets)
+# Quantitative Sports Pricing Dashboard & Risk Terminal (1X2 Markets)
 
 **Live Demo:** [https://vendettatvv.github.io/my-odds-app/](https://vendettatvv.github.io/my-odds-app/)
 
-A professional-grade pricing dashboard and data pipeline designed to simulate the toolset of quantitative analysts and sports traders. The project calculates "True Odds" for football (soccer) matches using historical data, applies custom bookmaker margins (overround), and provides correct score probability matrices.
+A professional-grade sports pricing dashboard and risk management terminal designed to simulate the toolset of quantitative analysts and traders. The project calculates "True Odds" for football matches using advanced statistical models, applies bookmaker margins with market bias, and features a real-time risk desk to track liability and P&L.
 
 ## 🏗 Architecture
 
-To maintain a fast, serverless frontend hosted on GitHub Pages, the architecture is split into an offline Data Engineering pipeline and a dynamic React frontend.
+To maintain a fast, serverless frontend hosted on GitHub Pages, the architecture separates the offline data engineering pipeline from the dynamic React interface:
 
-1. **Data Pipeline (Python & SQLite):** Parses historical CSV match data, processes it through quantitative models, and exports static JSON files.
-2. **Frontend (React):** Consumes the generated JSON data to calculate real-time probabilities, odds, and sensitivity matrices without requiring a live backend.
+1. **Data Pipeline (Python & SQLite):** Processes historical match data, computes team ratings and expected goals, and exports static JSON feeds.
+2. **Frontend (React):** Consumes the JSON data to deliver a real-time pricing terminal, risk manager, and sensitivity matrices without needing a live server backend.
 
-## 🧮 Mathematical Models
+## 🧮 Core Features & Models
 
-### 1. ELO Rating System (Dynamic Form)
-- Ratings are recalculated match-by-match based on expected vs. actual outcomes.
-- **Model Calibration:** The parameters were backtested and optimized against 4 seasons of Premier League data (minimizing prediction error/Brier Score), resulting in a calibrated **K-factor of 28** and a **Home Advantage of 40 ELO points**.
+### 1. Dual Pricing Engines (Poisson & ELO)
+- **Poisson Distribution (with Dixon-Coles Correction):** Forecasts exact scorelines and 1X2 probabilities based on team attack/defense strengths, incorporating a low-score correction for realistic draw frequencies.
+- **ELO Rating System:** Evaluates match probabilities dynamically using team ratings, calibrated Home Field Advantage, and custom draw margins.
 
-### 2. Poisson Distribution (Expected Goals)
-- Forecasts the exact scoreline probabilities (0-0, 2-1, etc.).
-- **Rolling Window:** Instead of relying on static historical averages, the Python pipeline uses `pandas` to calculate attack and defense strengths based strictly on a **38-game rolling window**, ensuring the model reacts to current team form.
+### 2. Risk Manager & Hybrid Market Pricing
+- **80/20 Market Blending:** Bridges quantitative model probabilities with incoming betting volume distributions to simulate realistic bookmaker line adjustments.
+- **Live P&L & Liability Tracking:** Instantly calculates bookmaker profit and exposure across all match outcomes based on active betting pools.
+- **Elastic Margin Protection:** Automatically adjusts and expands bookoverrounds during extreme manual odds overrides to prevent sharp arbitrage risks.
 
-### 3. Risk & Margin Management
-- Features a dynamic Margin (%) input to simulate how bookmakers compress true odds to guarantee an overround.
-- Includes an ELO Sensitivity Matrix to visualize how odds shift when a team's rating changes (e.g., due to a red card or key injury in-play).
+### 3. Analytical Matrices
+- **Correct Score Heatmap:** Visualizes match scoreline probabilities (0-4 grid backed by deep data integration).
+- **ELO Sensitivity Matrix:** Demonstrates how market pricing shifts in response to team rating fluctuations.
 
 ## 🛠 Tech Stack
-- **Frontend:** React 19, Tailwind CSS, Lucide Icons.
-- **Data Engineering:** Python 3, Pandas, SQLite3.
-- **Deployment:** GitHub Pages (CI/CD via gh-pages).
+- **Frontend:** React, Tailwind CSS, Lucide Icons.
+- **Data Engineering:** Python, Pandas, SQLite3.
+- **Deployment:** GitHub Pages.
 
 ## 🚀 How to Run Locally
 
 ### 1. Update the Data (Python Pipeline)
-Navigate to the `python` directory and run the scripts to fetch the latest EPL data, calculate ratings, and generate the JSON feeds:
+Navigate to the `python` directory and run the scripts to fetch data, compute ratings, and generate JSON feeds:
 ```bash
 cd python
 pip install pandas
-python load_data.py    # Fetches 4 seasons of data into SQLite
+python load_data.py    # Populates SQLite database
 python elo.py          # Calibrates and exports elo.json
-python export.py       # Calculates rolling xG and exports teams.json
+python export.py       # Computes metrics and exports teams.json
