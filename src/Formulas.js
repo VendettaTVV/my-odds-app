@@ -25,8 +25,9 @@ function Formulas() {
           </div>
           <div className="bg-gray-900 p-4 rounded-md border border-gray-700 text-sm">
             <ul className="space-y-2">
-              <li><strong className="text-white">Expected Goals (xG):</strong> Base metrics for the Poisson model are parsed from providers like <strong>Understat</strong>, <strong>FBref (Opta data)</strong>, or <strong>FootyStats</strong>.</li>
-              <li><strong className="text-white">ELO Ratings:</strong> Historical and live team strength indices are sourced from <strong>ClubElo.com</strong> or calculated via internal SQL databases evaluating past seasons' performance.</li>
+              <li><strong className="text-white">Match results:</strong> Four Premier League seasons from <strong>football-data.co.uk</strong>, stored in a local SQLite database by the Python pipeline.</li>
+              <li><strong className="text-white">Team strengths (Poisson):</strong> Time-decay weighted goals scored and conceded over each team's last 38 matches (actual goals, not shot-based xG). League home/away scoring rates are exported alongside them.</li>
+              <li><strong className="text-white">ELO Ratings:</strong> Replayed match by match from the same history. K-factor, home advantage and the draw threshold are calibrated by a walk-forward grid search minimising the 1X2 Brier score on unseen seasons.</li>
             </ul>
           </div>
         </section>
@@ -74,10 +75,22 @@ function Formulas() {
             <p className="text-xs text-gray-500"><strong>400</strong> is a standard constant determining how rating difference translates to probability difference.</p>
           </div>
 
+          <div className="bg-gray-900 p-4 rounded-md border border-gray-700 mb-4">
+            <h4 className="text-md font-medium text-blue-300 mb-2">2.2. 1X2 Probabilities with a Draw Threshold</h4>
+            <p className="text-xs text-gray-400 mb-3">The win/loss curve is split by a symmetric threshold D; the gap between the two curves is the draw probability.</p>
+            <div className="font-mono text-sm text-center bg-gray-800 p-3 rounded mb-2 text-gray-200 space-y-1">
+              <div>&Delta; = R_home + HFA - R_away</div>
+              <div>P_1 = 1 / (1 + 10<sup>-(&Delta; - D)/400</sup>)</div>
+              <div>P_2 = 1 / (1 + 10<sup>(&Delta; + D)/400</sup>)</div>
+              <div>P_X = 1 - P_1 - P_2</div>
+            </div>
+          </div>
+
           <div className="bg-gray-900 p-4 rounded-md border border-gray-700 text-sm">
-            <h4 className="text-md font-medium text-blue-300 mb-2">2.2. Key ELO Adjustment Factors</h4>
+            <h4 className="text-md font-medium text-blue-300 mb-2">2.3. Key ELO Adjustment Factors</h4>
             <ul className="space-y-2 list-disc pl-5 text-gray-400">
-              <li><strong className="text-white">Home Advantage:</strong> Adds 20-50 ELO points to the home team's rating (Empirical observation).</li>
+              <li><strong className="text-white">Home Advantage:</strong> ELO points added to the home team's rating, calibrated from historical results.</li>
+              <li><strong className="text-white">Rating update:</strong> R_new = R_old + K &times; (Actual - Expected), where Actual is 1 / 0.5 / 0 and the update is zero-sum between the two teams.</li>
               <li><strong className="text-white">Injuries/Suspensions:</strong> Subtracts 20-50 ELO points from the affected team's rating (Risk assessment).</li>
               <li><strong className="text-white">xG/Form Adjustment:</strong> Adding or subtracting points based on recent Expected Goals performance.</li>
             </ul>
@@ -93,13 +106,24 @@ function Formulas() {
 
           <div className="bg-gray-900 p-4 rounded-md border border-gray-700 mb-4">
             <h4 className="text-md font-medium text-blue-300 mb-2">3.1. Expected Goals (&lambda;) Calculation</h4>
-            <div className="font-mono text-sm text-center bg-gray-800 p-3 rounded mb-2 text-gray-200">
-              &lambda;_A = Attack_Strength_A &times; Defense_Strength_B &times; League_Avg_Goals
+            <p className="text-xs text-gray-400 mb-3">Maher's multiplicative model. Strengths are relative to the league average goals per team (Avg), and home advantage comes from the league home/away scoring rates.</p>
+            <div className="font-mono text-sm text-center bg-gray-800 p-3 rounded mb-2 text-gray-200 space-y-1">
+              <div>&lambda;_home = (Attack_home / Avg) &times; (Defense_away / Avg) &times; Avg_home_goals</div>
+              <div>&lambda;_away = (Attack_away / Avg) &times; (Defense_home / Avg) &times; Avg_away_goals</div>
+            </div>
+          </div>
+
+          <div className="bg-gray-900 p-4 rounded-md border border-gray-700 mb-4">
+            <h4 className="text-md font-medium text-blue-300 mb-2">3.2. Dixon-Coles Low-Score Correction</h4>
+            <p className="text-xs text-gray-400 mb-3">Independent Poisson under-predicts 0:0 and 1:1. The score probability is multiplied by &tau;; a negative &rho; moves probability towards these draws.</p>
+            <div className="font-mono text-sm text-center bg-gray-800 p-3 rounded mb-2 text-gray-200 space-y-1">
+              <div>&tau;(0,0) = 1 - &lambda;&mu;&rho; &nbsp; &tau;(0,1) = 1 + &lambda;&rho;</div>
+              <div>&tau;(1,0) = 1 + &mu;&rho; &nbsp; &tau;(1,1) = 1 - &rho;</div>
             </div>
           </div>
 
           <div className="bg-gray-900 p-4 rounded-md border border-gray-700">
-            <h4 className="text-md font-medium text-blue-300 mb-2">3.2. Poisson Probability (Score k)</h4>
+            <h4 className="text-md font-medium text-blue-300 mb-2">3.3. Poisson Probability (Score k)</h4>
             <p className="text-xs text-gray-400 mb-3">Probability of a team scoring exactly k goals in a match.</p>
             <div className="font-mono text-sm text-center bg-gray-800 p-3 rounded mb-2 text-gray-200">
               P(k) = (&lambda;<sup>k</sup> &times; e<sup>-&lambda;</sup>) / k!

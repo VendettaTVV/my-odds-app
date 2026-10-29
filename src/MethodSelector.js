@@ -1,7 +1,6 @@
-
 import React from 'react';
 
-function MethoSelector({ activeTab, setActiveTab }) {
+function MethodSelector({ activeTab, setActiveTab }) {
   const tabs = [
     { id: 'poisson', label: 'Poisson Distribution' },
     { id: 'elo', label: 'ELO Rating System' },
@@ -27,4 +26,4 @@ function MethoSelector({ activeTab, setActiveTab }) {
   );
 }
 
-export default MethoSelector;
+export default MethodSelector;

@@ -24,3 +24,5 @@ yarn-error.log*
 
 # Python SQLite Database
 python/football.db
+# Python bytecode cache
+__pycache__/

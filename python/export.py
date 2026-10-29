@@ -1,53 +1,51 @@
-import sqlite3
-import pandas as pd
-import json
-import os
+from elo_model import load_matches, current_teams, write_public_json
 
-# 1. Connect to the database and load match history
-con = sqlite3.connect('football.db')
-df = pd.read_sql_query("SELECT Date, HomeTeam, AwayTeam, FTHG, FTAG FROM matches", con)
-con.close()
+MATCH_WINDOW = 38      # one full season of recent form
+DECAY_STEP = 0.02      # weight lost per older match
+MIN_WEIGHT = 0.1
+DC_RHO = -0.10         # Dixon-Coles low-score correlation (typical value from the literature)
 
-# 2. Parse dates correctly and sort from newest to oldest for recent-form analysis
-df["Date"] = pd.to_datetime(df["Date"], format='mixed', dayfirst=True)
-df = df.sort_values("Date", ascending=False)
+# 1. Load match history, newest first for recent-form analysis
+df = load_matches().sort_values("Date", ascending=False)
 
+# 2. League scoring rates. Home teams score more than away teams; the frontend
+#    uses this ratio as the home advantage of the Poisson model.
+avg_home_goals = df["FTHG"].mean()
+avg_away_goals = df["FTAG"].mean()
+
+# 3. Time-decay weighted goals scored / conceded over each team's last 38 matches.
+#    These are based on actual goals, not on shot-based xG.
 teams_data = {}
-all_teams = pd.concat([df['HomeTeam'], df['AwayTeam']]).unique()
+for team in sorted(current_teams(df)):
+    team_matches = df[(df["HomeTeam"] == team) | (df["AwayTeam"] == team)].head(MATCH_WINDOW)
 
-# 3. Calculate team statistics using Time Decay weighting over the last 38 matches
-for team in all_teams:
-    # Filter matches where the team participated and take the most recent 38 games
-    team_matches = df[(df['HomeTeam'] == team) | (df['AwayTeam'] == team)].head(38)
-    
-    if len(team_matches) == 0:
-        continue
-        
-    scored = 0
-    conceded = 0
-    total_weight = 0
-    
-    for i, (_, m) in enumerate(team_matches.iterrows()):
-        # Linear time decay: Most recent match (i=0) has weight 1.0, older matches decay down to 0.26
-        weight = max(0.1, 1.0 - (i * 0.02)) 
+    scored = conceded = total_weight = 0.0
+    for i, m in enumerate(team_matches.itertuples(index=False)):
+        # Linear decay: the most recent match (i=0) weighs 1.0, the 38th weighs 0.26
+        weight = max(MIN_WEIGHT, 1.0 - i * DECAY_STEP)
         total_weight += weight
-        
-        if m['HomeTeam'] == team:
-            scored += m['FTHG'] * weight
-            conceded += m['FTAG'] * weight
+
+        if m.HomeTeam == team:
+            scored += m.FTHG * weight
+            conceded += m.FTAG * weight
         else:
-            scored += m['FTAG'] * weight
-            conceded += m['FTHG'] * weight
-            
-    # Compute weighted average expected goals (xG) emphasizing current team form
+            scored += m.FTAG * weight
+            conceded += m.FTHG * weight
+
     teams_data[team] = {
-        "attack_xg": round(scored / total_weight, 2),
-        "defense_xg": round(conceded / total_weight, 2)
+        "attack": round(scored / total_weight, 2),     # weighted goals scored per match
+        "defense": round(conceded / total_weight, 2),  # weighted goals conceded per match
     }
 
-# 4. Export processed datasets to the React public directory
-os.makedirs('../public/data', exist_ok=True)
-with open('../public/data/teams.json', 'w', encoding='utf-8') as f:
-    json.dump(teams_data, f, indent=4)
+# 4. Export team strengths together with the league parameters
+path = write_public_json("teams.json", {
+    "params": {
+        "avg_home_goals": round(avg_home_goals, 3),
+        "avg_away_goals": round(avg_away_goals, 3),
+        "dc_rho": DC_RHO,
+    },
+    "teams": teams_data,
+})
 
-print("Success! Dynamic xG metrics with Time Decay have been saved to public/data/teams.json")
+print(f"League averages: home {avg_home_goals:.2f}, away {avg_away_goals:.2f} goals per match")
+print(f"Success! Time-decay team strengths saved to {path}")
